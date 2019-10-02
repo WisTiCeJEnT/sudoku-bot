@@ -33,10 +33,13 @@ def crop_it_rev(img):
                 return img
 
 def load_number_img():
-    for i in range(1, 10):
+    for i in range(10):
         num.append(cv2.imread(f'{i}.png', cv2.IMREAD_GRAYSCALE))
         #print(num[i].shape)
         num[i] = cv2.threshold(num[i], 128, 255, cv2.THRESH_BINARY)[1]
+        if(i == 0):
+            num[i] = cv2.resize(num[i], (num_size, num_size))
+            continue
         minx = num[i].shape[1]
         maxx = 0
         miny = num[i].shape[0]
@@ -52,7 +55,7 @@ def load_number_img():
         num[i] = cv2.resize(num[i], (num_size, num_size))
         #print(minx, miny)
         #print(maxx, maxy)
-        cv2.imshow(f'{i}', num[i])
+        #cv2.imshow(f'{i}', num[i])
 
 def check_num(full_img, x, y):
     img = full_img[y:y+60, x:x+60]
@@ -68,10 +71,11 @@ def check_num(full_img, x, y):
                 maxx = max(maxx, k)
                 miny = min(miny, j)
                 maxy = max(maxy, j)
-    test_img = img[miny:maxy, minx:maxx]
-    for i in range(1, 10):
-        img = test_img[:, :]
-        img = cv2.resize(img, (num[i].shape[1], num[i].shape[0]))
+    img = img[miny:maxy, minx:maxx]
+    if(img.shape == (0,0)):
+        return 0
+    img = cv2.resize(img, (num_size, num_size))
+    for i in range(10):
         for xx in range(num[i].shape[1]):
             for yy in range(num[i].shape[0]):
                 if(abs(num[i][yy][xx] - img[yy][xx])<10):
@@ -81,14 +85,15 @@ def check_num(full_img, x, y):
                     # print(0,end='')
                     pass
             # print()
-    print(match)
-    cv2.imshow("test", img)
+    #print(match)
+    #cv2.imshow("test", img)
+    return match.index(max(match))
 
 time.sleep(1)
 #img = pyautogui.screenshot('sceenshot.png')
 img = cv2.imread('sceenshot.png', cv2.IMREAD_GRAYSCALE)
 img = cv2.resize(img,(int(img.shape[1]/1),int(img.shape[0]/1)))
-num = [0]   #starter
+num = []   
 load_number_img()
 ret, thresh = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY)
 x = 0
@@ -100,7 +105,7 @@ thresh = crop_it(thresh)
 thresh = crop_it_rev(thresh)
 print(thresh.shape)
 #(424, 320)
-check_num(thresh, 14+64+8, 156+128+8)
+print(check_num(thresh, 14, 156))
 print("done")
 
 cv2.imshow('display', thresh)
