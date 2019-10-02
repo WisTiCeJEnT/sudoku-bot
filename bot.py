@@ -6,17 +6,26 @@ import sys
 
 sys.setrecursionlimit(100000)
 num_size = 28
-def fill(img, x, y, c):
+def fill_the_table(img):
+    tbl = []
+    for i in range(9):
+        tmp = []
+        for j in range(9):
+            print(i,j)
+            tmp.append(check_num(img, 14+(i*69), 156+(j*69)))
+        tbl.append(tmp)
+    return tbl
+def fill(img, x, y, new_color, old_color):
     if(x<0 or y<0):
         return False
     if(x==img.shape[1] or y==img.shape[0]):
         return False
-    if(img[y,x] != c and img[y,x]>250):
-        img[y,x] = c
-        fill(img, x+1, y, c)
+    if(img[y,x] != new_color and abs(img[y,x]-old_color)<20):
+        img[y,x] = new_color
+        fill(img, x+1, y, new_color, old_color)
         # fill(img, x-1, y, c)
-        fill(img, x, y+1, c)
-        fill(img, x, y-1, c)
+        fill(img, x, y+1, new_color, old_color)
+        fill(img, x, y-1, new_color, old_color)
 
 def crop_it(img):
     for i in range(img.shape[0]):
@@ -59,6 +68,7 @@ def load_number_img():
 
 def check_num(full_img, x, y):
     img = full_img[y:y+60, x:x+60]
+    #cv2.imshow(f"{x} {y}", img)
     match = [0 for i in range(10)]
     minx = img.shape[1]
     maxx = 0
@@ -86,7 +96,7 @@ def check_num(full_img, x, y):
                     pass
             # print()
     #print(match)
-    #cv2.imshow("test", img)
+    #cv2.imshow(f"{x} {y} {match.index(max(match))}", img)
     return match.index(max(match))
 
 time.sleep(1)
@@ -100,12 +110,17 @@ x = 0
 y = int(img.shape[0]/2)
 while(thresh[y,x] < 128):
     x += 1
-fill(thresh, x, y, 128)
+fill(thresh, x, y, 128, 255)
 thresh = crop_it(thresh)
 thresh = crop_it_rev(thresh)
 print(thresh.shape)
-#(424, 320)
-print(check_num(thresh, 14, 156))
+x = 0
+y = int(thresh.shape[0]/2)
+while(thresh[y,x] > 20):
+    x += 1
+fill(thresh, x, y, 255, 0)
+problem_tbl = fill_the_table(thresh)
+print(problem_tbl)
 print("done")
 
 cv2.imshow('display', thresh)
