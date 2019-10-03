@@ -3,18 +3,42 @@ import time
 import pyautogui
 import numpy as np
 import sys
+import os
 
 sys.setrecursionlimit(100000)
 num_size = 28
+
+def sudoku_solver(problem_tbl):
+    write_tbl_to_file(problem_tbl, "problem.spsv")
+    os.system("./solver.cpp.out < problem.spsv > answer.spsv")
+    return read_tbl_from_file("answer.spsv")
+    
+def read_tbl_from_file(filename):
+    data_tbl = []
+    f = open(filename, 'r').read()
+    data = f.strip().split('\n')
+    for row in data:
+        data_tbl.append([int(x) for x in row.strip().split(' ')])
+    return data_tbl
+
+def write_tbl_to_file(tbl_data, filename):
+    f = open(filename, 'w')
+    for row in tbl_data:
+        for col in row:
+            f.write(f"{col} ")
+        f.write("\n")
+    f.close()
+
 def fill_the_table(img):
     tbl = []
     for i in range(9):
         tmp = []
         for j in range(9):
-            print(i,j)
-            tmp.append(check_num(img, 14+(i*69), 156+(j*69)))
+            #print(i,j)
+            tmp.append(check_num(img, 14+(j*69), 156+(i*69)))
         tbl.append(tmp)
     return tbl
+
 def fill(img, x, y, new_color, old_color):
     if(x<0 or y<0):
         return False
@@ -90,11 +114,6 @@ def check_num(full_img, x, y):
             for yy in range(num[i].shape[0]):
                 if(abs(num[i][yy][xx] - img[yy][xx])<10):
                     match[i]+=1
-                    # print(1,end='')
-                else:
-                    # print(0,end='')
-                    pass
-            # print()
     #print(match)
     #cv2.imshow(f"{x} {y} {match.index(max(match))}", img)
     return match.index(max(match))
@@ -122,6 +141,9 @@ fill(thresh, x, y, 255, 0)
 problem_tbl = fill_the_table(thresh)
 print(problem_tbl)
 print("done")
+
+answer_tbl = sudoku_solver(problem_tbl)
+print(answer_tbl)
 
 cv2.imshow('display', thresh)
 cv2.waitKey()
