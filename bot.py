@@ -31,13 +31,17 @@ def write_tbl_to_file(tbl_data, filename):
 
 def fill_the_table(img):
     tbl = []
+    pos_tbl = []
     for i in range(9):
         tmp = []
+        tmp2 = []
         for j in range(9):
             #print(i,j)
             tmp.append(check_num(img, 14+(j*69), 156+(i*69)))
+            tmp2.append(( 14+(j*69)+30, 156+(i*69)+30 ))
         tbl.append(tmp)
-    return tbl
+        pos_tbl.append(tmp2)
+    return (tbl, pos_tbl)
 
 def fill(img, x, y, new_color, old_color):
     if(x<0 or y<0):
@@ -118,11 +122,25 @@ def check_num(full_img, x, y):
     #cv2.imshow(f"{x} {y} {match.index(max(match))}", img)
     return match.index(max(match))
 
+def auto_answer(answer, x_start, y_start, pos_tbl, ratio, img):
+    num_btn_pos = [(0,0)]
+    for i in range(9):
+        num_btn_pos.append(( (890*ratio)+y_start, ratio*(35+(70*i))+x_start ))
+    holizon_ratio = img.shape[1]/pyautogui.size().width
+    vertical_ratio = img.shape[0]/pyautogui.size().height
+    for i in range(1,10):
+        pyautogui.click(x=num_btn_pos[i][1]/holizon_ratio, y=num_btn_pos[i][0]/vertical_ratio)
+        time.sleep(0.25)
+        
+    
+    
 time.sleep(1)
-#img = pyautogui.screenshot('sceenshot.png')
+pyautogui.moveTo(1,1)
+img = pyautogui.screenshot('sceenshot.png')
+pyautogui.moveTo(100,100)
 img = cv2.imread('sceenshot.png', cv2.IMREAD_GRAYSCALE)
 img = cv2.resize(img,(int(img.shape[1]/1),int(img.shape[0]/1)))
-num = []   
+num = []
 load_number_img()
 ret, thresh = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY)
 x = 0
@@ -130,23 +148,30 @@ y = int(img.shape[0]/2)
 while(thresh[y,x] < 128):
     x += 1
 fill(thresh, x, y, 128, 255)
+cut_point_y = thresh.shape[0]
+cut_point_x = thresh.shape[1]
+print(cut_point_x, " ", cut_point_y)
 thresh = crop_it(thresh)
+cut_point_y -= thresh.shape[0]
+cut_point_x -= thresh.shape[1]
 thresh = crop_it_rev(thresh)
+print(cut_point_x, " ", cut_point_y)
+tmp = img[850:-200, 389:1000]
+
+#cv2.imshow('img', img[-400: , :])
 print(thresh.shape)
 x = 0
 y = int(thresh.shape[0]/2)
 while(thresh[y,x] > 20):
     x += 1
 fill(thresh, x, y, 255, 0)
-problem_tbl = fill_the_table(thresh)
-print(problem_tbl)
-print("done")
-
+problem_tbl, position_tbl = fill_the_table(thresh)
 answer_tbl = sudoku_solver(problem_tbl)
-print(answer_tbl)
+auto_answer(problem_tbl, cut_point_x, cut_point_y, position_tbl, 1, img)
+#print(answer_tbl)
 
-cv2.imshow('display', thresh)
-cv2.waitKey()
-
+print("done")
+#cv2.imshow("GG", img[:500 ,:])
+#cv2.waitKey()
 #time.sleep(5)
 cv2.destroyAllWindows()
