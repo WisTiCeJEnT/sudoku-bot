@@ -237,7 +237,7 @@ int main()
             count = rSol(count);
             if(tmp==count)
             {
-                cout << "I'm out T^T" << endl;
+                //cout << "I'm out T^T" << endl;
                 break;
             }
         }

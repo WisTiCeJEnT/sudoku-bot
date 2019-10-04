@@ -11,7 +11,12 @@ num_size = 28
 def sudoku_solver(problem_tbl):
     write_tbl_to_file(problem_tbl, "problem.spsv")
     os.system("./solver.cpp.out < problem.spsv > answer.spsv")
-    return read_tbl_from_file("answer.spsv")
+    answer_tbl = read_tbl_from_file("answer.spsv")
+    for i in range(9):
+        for j in range(9):
+            if(problem_tbl[i][j] != 0):
+                answer_tbl[i][j] = 0
+    return answer_tbl
     
 def read_tbl_from_file(filename):
     data_tbl = []
@@ -129,9 +134,13 @@ def auto_answer(answer, x_start, y_start, pos_tbl, ratio, img):
     holizon_ratio = img.shape[1]/pyautogui.size().width
     vertical_ratio = img.shape[0]/pyautogui.size().height
     for i in range(1,10):
-        pyautogui.click(x=num_btn_pos[i][1]/holizon_ratio, y=num_btn_pos[i][0]/vertical_ratio)
-        time.sleep(0.25)
-        
+        pyautogui.click(x=num_btn_pos[i][1]/holizon_ratio, y=num_btn_pos[i][0]/vertical_ratio, clicks=1)
+        time.sleep(0.20)
+        for x in range(9):
+            for y in range(9):
+                if(answer_tbl[x][y] == i):
+                    pyautogui.click(y=(pos_tbl[x][y][1]+y_start)/vertical_ratio, x=(pos_tbl[x][y][0]+x_start)/holizon_ratio, clicks=1)
+                    time.sleep(0.1)
     
     
 time.sleep(1)
@@ -167,7 +176,7 @@ while(thresh[y,x] > 20):
 fill(thresh, x, y, 255, 0)
 problem_tbl, position_tbl = fill_the_table(thresh)
 answer_tbl = sudoku_solver(problem_tbl)
-auto_answer(problem_tbl, cut_point_x, cut_point_y, position_tbl, 1, img)
+auto_answer(answer_tbl, cut_point_x, cut_point_y, position_tbl, 1, img)
 #print(answer_tbl)
 
 print("done")
