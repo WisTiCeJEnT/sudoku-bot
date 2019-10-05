@@ -135,20 +135,28 @@ def auto_answer(answer, x_start, y_start, pos_tbl, ratio, img):
     vertical_ratio = img.shape[0]/pyautogui.size().height
     for i in range(1,10):
         pyautogui.click(x=num_btn_pos[i][1]/holizon_ratio, y=num_btn_pos[i][0]/vertical_ratio, clicks=1)
-        time.sleep(0.20)
+        time.sleep(0.40)
         for x in range(9):
             for y in range(9):
                 if(answer_tbl[x][y] == i):
                     pyautogui.click(y=(pos_tbl[x][y][1]+y_start)/vertical_ratio, x=(pos_tbl[x][y][0]+x_start)/holizon_ratio, clicks=1)
-                    time.sleep(0.1)
+                    time.sleep(0.2)
     
+def print_tbl(tbl):
+    for i in range(9):
+        for j in range(9):
+            print(tbl[i][j], end=' ')
+        print()
     
+print("starting")
 time.sleep(1)
 pyautogui.moveTo(1,1)
 img = pyautogui.screenshot('sceenshot.png')
 pyautogui.moveTo(100,100)
 img = cv2.imread('sceenshot.png', cv2.IMREAD_GRAYSCALE)
+print("captured")
 img = cv2.resize(img,(int(img.shape[1]/1),int(img.shape[0]/1)))
+print("preprocessing img . . .")
 num = []
 load_number_img()
 ret, thresh = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY)
@@ -175,7 +183,11 @@ while(thresh[y,x] > 20):
     x += 1
 fill(thresh, x, y, 255, 0)
 problem_tbl, position_tbl = fill_the_table(thresh)
+print("Question . . .")
+print_tbl(problem_tbl)
 answer_tbl = sudoku_solver(problem_tbl)
+print("Answer . . .")
+print_tbl(answer_tbl)
 auto_answer(answer_tbl, cut_point_x, cut_point_y, position_tbl, 1, img)
 #print(answer_tbl)
 
